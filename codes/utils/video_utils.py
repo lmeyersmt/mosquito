@@ -483,3 +483,65 @@ class videoInfo(object):
         print('Bit rate: ' + str(self._bitRate))
         print('Number of frames: ' + str(self._numberOfFrames))
         print(' ')
+
+# LUCAS
+def scale_img(src, scale):
+    # calculate new dimensions
+    new_w = int(src.shape[1] * scale)
+    new_h = int(src.shape[0] * scale)
+
+    return cv2.resize(src, (new_w, new_h))
+def phase_correlation(img, img_offset, scale=None):
+    """Image translation registration by cross-correlation.
+    It obtains an estimate of the cross-correlation peak by an FFT.
+    It is very similar to `skimage.feature.register_translation`.
+    However, our function runs faster because we restrict it to our application.
+    Args:
+        img (array): image.
+        img_offset (array): offset image. Must have the same dim as `img`.
+        scale (float, optional): If not `None`, rescale input images to run faster.
+        Defaults to None.
+    Returns:
+        array:  shift vector (in pixels) required to register `img_offset` with
+        `img`.  Axis ordering is consistent with numpy (e.g. Z, Y, X)
+    """
+
+    if img.shape != img_offset.shape:
+        raise ValueError("Error: images must be same size")
+
+    # if images in BGR, tranform to grayscal and use fft2
+    # which is much faster than using fftn
+    # if img.ndim > 2:
+    #     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # if img_offset.ndim > 2:
+    #     img_offset = cv2.cvtColor(img_offset, cv2.COLOR_BGR2GRAY)
+
+    img = np.float32(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+    img_offset = np.float32(cv2.cvtColor(img_offset, cv2.COLOR_BGR2GRAY))
+
+    if scale is not None:
+        img = scale_img(img, scale)
+        img_offset = scale_img(img_offset, scale)
+
+    (x, y), c = cv2.phaseCorrelate(img, img_offset)
+
+    # img_fft = np.fft.fft2(img)
+    # img_offset_fft = np.fft.fft2(img_offset)
+
+    # shape = img_fft.shape
+    # midpoints = np.array([np.fix(axis_size / 2) for axis_size in shape])
+
+    # R = img_fft * img_offset_fft.conj()
+    # # R /= np.absolute(R)  # normalize give wrong results for large frames interval (???)
+    # # (print('norm'))
+    # cross_correlation = np.fft.ifft2(R)
+
+    # shifts = np.unravel_index(np.argmax(np.absolute(cross_correlation)), shape)
+    # shifts = np.array(shifts, dtype=np.float64)
+    # shifts[shifts > midpoints] -= np.array(shape)[shifts > midpoints]
+
+    if scale is not None:
+        x /= scale
+        y /= scale
+
+    return (x, y), c
