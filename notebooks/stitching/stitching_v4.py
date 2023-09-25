@@ -41,5 +41,5 @@ def cumulative_sum2 (data_frame_path, image_path, translation = 0.2):
     frames_desloc.append([(x,y),counter])
   return frames_desloc
 
-results = cumulative_sum2(SANTA_CRUZ+DATA_FRAME_PATH, SANTA_CRUZ+IMAGE_PATH)
-print (resuts)
+results = cumulative_sum2(SANTA_CRUZ+'dataFrames/all/phase_correlate.csv', SANTA_CRUZ+)
+print (results)
